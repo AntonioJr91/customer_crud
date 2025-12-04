@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.antoniojr.customer_crud.dto.CustomerDTO;
 import com.antoniojr.customer_crud.entity.Customer;
 import com.antoniojr.customer_crud.repositories.CustomerRepository;
 
@@ -16,7 +17,8 @@ public class CustomerService {
   private CustomerRepository repository;
 
   @Transactional(readOnly = true)
-  public List<Customer> findAll() {
-    return repository.findAll();
+  public List<CustomerDTO> findAll() {
+    List<Customer> list = repository.findAll();
+    return list.stream().map(customer -> new CustomerDTO(customer)).toList();
   }
 }
