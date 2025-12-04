@@ -15,7 +15,7 @@ public class Customer implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue( strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
   private String name;
   private String cpf;
@@ -50,6 +50,10 @@ public class Customer implements Serializable {
     return cpf;
   }
 
+  public void setCpf(String cpf) {
+    this.cpf = cpf;
+  }
+
   public Double getIncome() {
     return income;
   }
@@ -60,6 +64,10 @@ public class Customer implements Serializable {
 
   public LocalDate getBirthDate() {
     return birthDate;
+  }
+
+  public void setBirthDate(LocalDate birthDate) {
+    this.birthDate = birthDate;
   }
 
   public Integer getChildren() {
