@@ -3,10 +3,19 @@ package com.antoniojr.customer_crud.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "tbl_customer")
 public class Customer implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private static Integer count = 0;
+  @Id
+  @GeneratedValue( strategy = GenerationType.IDENTITY)
   private Integer id;
   private String name;
   private String cpf;
@@ -18,7 +27,6 @@ public class Customer implements Serializable {
   }
 
   public Customer(String name, String cpf, Double income, LocalDate birthDate, Integer children) {
-    this.id = ++count;
     this.name = name;
     this.cpf = cpf;
     this.income = income;
