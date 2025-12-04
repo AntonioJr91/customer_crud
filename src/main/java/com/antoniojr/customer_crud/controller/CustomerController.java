@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,8 +46,14 @@ public class CustomerController {
   }
 
   @PutMapping(value = "/{id}")
-  public ResponseEntity<CustomerDTO> update(@PathVariable int id, @RequestBody CustomerDTO entityDTO){
+  public ResponseEntity<CustomerDTO> update(@PathVariable int id, @RequestBody CustomerDTO entityDTO) {
     entityDTO = customerService.update(id, entityDTO);
     return ResponseEntity.ok(entityDTO);
+  }
+
+  @DeleteMapping(value = "/{id}")
+  public ResponseEntity<CustomerDTO> delete(@PathVariable int id) {
+    customerService.delete(id);
+    return ResponseEntity.noContent().build();
   }
 }
