@@ -12,6 +12,8 @@ import com.antoniojr.customer_crud.entity.Customer;
 import com.antoniojr.customer_crud.repositories.CustomerRepository;
 import com.antoniojr.customer_crud.services.exceptions.ResourceNotFoundException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class CustomerService {
 
@@ -44,5 +46,23 @@ public class CustomerService {
     customer = repository.save(customer);
 
     return new CustomerDTO(customer);
+  }
+
+  @Transactional
+  public CustomerDTO update(int id, CustomerDTO entityDTO) {
+    try {
+      Customer entity = repository.getReferenceById(id);
+      entity.setName(entityDTO.getName());
+      entity.setCpf(entityDTO.getCpf());
+      entity.setIncome(entityDTO.getIncome());
+      entity.setBirthDate(entityDTO.getBirthDate());
+      entity.setChildren(entityDTO.getChildren());
+
+      entity = repository.save(entity);
+      return new CustomerDTO(entity);
+
+    } catch (EntityNotFoundException e) {
+      throw new ResourceNotFoundException("Id not found " + id);
+    }
   }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,9 +38,15 @@ public class CustomerController {
   }
 
   @PostMapping
-  public ResponseEntity<CustomerDTO> inser(@RequestBody CustomerDTO entityDTO) {
+  public ResponseEntity<CustomerDTO> insert(@RequestBody CustomerDTO entityDTO) {
     entityDTO = customerService.insert(entityDTO);
     URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(entityDTO.getId()).toUri();
     return ResponseEntity.created(uri).body(entityDTO);
+  }
+
+  @PutMapping(value = "/{id}")
+  public ResponseEntity<CustomerDTO> update(@PathVariable int id, @RequestBody CustomerDTO entityDTO){
+    entityDTO = customerService.update(id, entityDTO);
+    return ResponseEntity.ok(entityDTO);
   }
 }
