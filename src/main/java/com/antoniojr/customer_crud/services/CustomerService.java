@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.antoniojr.customer_crud.entity.Customer;
 import com.antoniojr.customer_crud.repositories.CustomerRepository;
@@ -14,6 +15,7 @@ public class CustomerService {
   @Autowired
   private CustomerRepository repository;
 
+  @Transactional(readOnly = true)
   public List<Customer> findAll() {
     return repository.findAll();
   }
