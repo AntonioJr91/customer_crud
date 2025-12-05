@@ -1,10 +1,13 @@
 package com.antoniojr.customer_crud.controller;
 
 import java.net.URI;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,9 +30,19 @@ public class CustomerController {
   private CustomerService customerService;
 
   @GetMapping
-  public ResponseEntity<List<CustomerDTO>> findAll() {
+  public ResponseEntity<Page<CustomerDTO>> findAll(
+      @NonNull @RequestParam(value = "page", defaultValue = "1") Integer page,
+      @NonNull @RequestParam(value = "sizePage", defaultValue = "5") Integer sizePage,
+      @NonNull @RequestParam(value = "orderBy", defaultValue = "name") String orderBy,
+      @NonNull @RequestParam(value = "direction", defaultValue = "ASC") String direction) {
 
-    List<CustomerDTO> list = customerService.findAll();
+    PageRequest pageRequest = PageRequest.of(page - 1,
+        sizePage,
+        Direction.valueOf(direction),
+        orderBy);
+
+    Page<CustomerDTO> list = customerService.findAllPaged(pageRequest);
+
     return ResponseEntity.ok(list);
   }
 

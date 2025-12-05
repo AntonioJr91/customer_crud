@@ -1,10 +1,11 @@
 package com.antoniojr.customer_crud.services;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +23,13 @@ public class CustomerService {
   private CustomerRepository repository;
 
   @Transactional(readOnly = true)
-  public List<CustomerDTO> findAll() {
-    List<Customer> list = repository.findAll();
-    return list.stream().map(customer -> new CustomerDTO(customer)).toList();
+  public Page<CustomerDTO> findAllPaged(PageRequest pageRequest) {
+    if (pageRequest == null) {
+      throw new IllegalArgumentException("pageRequest must not be null");
+    }
+    
+    Page<Customer> list = repository.findAll(pageRequest);
+    return list.map(customer -> new CustomerDTO(customer));
   }
 
   @Transactional(readOnly = true)
