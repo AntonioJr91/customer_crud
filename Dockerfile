@@ -10,7 +10,6 @@ COPY src src
 
 RUN ./mvnw -B clean package -DskipTests
 
-# Final stage with Distroless
 FROM gcr.io/distroless/java21-debian12:nonroot
 
 WORKDIR /app
