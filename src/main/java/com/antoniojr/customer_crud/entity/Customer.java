@@ -27,10 +27,10 @@ public class Customer implements Serializable {
   private LocalDate birthDate;
   private Integer children;
 
-  @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+  @Column(columnDefinition = "DATETIME")
   private Instant createdAt;
   
-  @Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+  @Column(columnDefinition = "DATETIME")
   private Instant updatedAt;
 
   public Customer() {

@@ -27,7 +27,7 @@ public class CustomerService {
     if (pageRequest == null) {
       throw new IllegalArgumentException("pageRequest must not be null");
     }
-    
+
     Page<Customer> list = repository.findAll(pageRequest);
     return list.map(customer -> new CustomerDTO(customer));
   }
@@ -43,11 +43,7 @@ public class CustomerService {
   @Transactional
   public CustomerDTO insert(CustomerDTO entityDTO) {
     Customer customer = new Customer();
-    customer.setName(entityDTO.getName());
-    customer.setCpf(entityDTO.getCpf());
-    customer.setIncome(entityDTO.getIncome());
-    customer.setBirthDate(entityDTO.getBirthDate());
-    customer.setChildren(entityDTO.getChildren());
+    copyToDto(customer, entityDTO);
 
     customer = repository.save(customer);
 
@@ -57,15 +53,13 @@ public class CustomerService {
   @Transactional
   public CustomerDTO update(int id, CustomerDTO entityDTO) {
     try {
-      Customer entity = repository.getReferenceById(id);
-      entity.setName(entityDTO.getName());
-      entity.setCpf(entityDTO.getCpf());
-      entity.setIncome(entityDTO.getIncome());
-      entity.setBirthDate(entityDTO.getBirthDate());
-      entity.setChildren(entityDTO.getChildren());
+      Customer customer = repository.getReferenceById(id);
+      
+      copyToDto(customer, entityDTO);
 
-      entity = repository.save(entity);
-      return new CustomerDTO(entity);
+      customer = repository.save(customer);
+
+      return new CustomerDTO(customer);
 
     } catch (EntityNotFoundException e) {
       throw new ResourceNotFoundException("Id not found " + id);
@@ -78,5 +72,13 @@ public class CustomerService {
     } catch (EmptyResultDataAccessException e) {
       throw new ResourceNotFoundException("Id not found " + id);
     }
+  }
+
+  private void copyToDto(Customer customer, CustomerDTO entityDTO) {
+    customer.setName(entityDTO.getName());
+    customer.setCpf(entityDTO.getCpf());
+    customer.setIncome(entityDTO.getIncome());
+    customer.setBirthDate(entityDTO.getBirthDate());
+    customer.setChildren(entityDTO.getChildren());
   }
 }
