@@ -39,7 +39,70 @@ GET | /customers | Get all customers
 GET | /customers/{id} | Get customer by ID          
 POST | /customers | Create a new customer       
 PUT | /customers/{id} | Update an existing customer 
-DELETE | /customers/{id} | Delete a customer           
+DELETE | /customers/{id} | Delete a customer
+
+## Pagination
+The customer listing supports pagination and sorting through query parameters.  
+
+**Query parameters:**
+| Parameter | Type | Required | Default | Description |
+|----------|------|----------|---------|-------------|
+| page | Integer | No | 1 | Page number (starting from 1) |
+| sizePage | Integer | No | 5 | Number of records per page |
+| orderBy | String | No | name | Field used for sorting |
+| direction | String | No | ASC | Sorting direction: ASC or DESC |
+
+**Example request:**  
+```GET /customers?page=1&sizePage=5&orderBy=name&direction=ASC```  
+
+**Example response:**
+```json
+{
+  "content": [
+        {
+            "id": 1,
+            "name": "John",
+            "cpf": "12345678910",
+            "income": 2500.0,
+            "birthDate": "1990-05-10",
+            "children": 2
+        },
+        {
+            "id": 2,
+            "name": "Mary",
+            "cpf": "0987654321",
+            "income": 3500.0,
+            "birthDate": "1995-05-10",
+            "children": 0
+        }
+    ],
+    "pageable": {
+        "pageNumber": 0,
+        "pageSize": 5,
+        "sort": {
+            "sorted": true,
+            "empty": false,
+            "unsorted": false
+        },
+        "offset": 0,
+        "paged": true,
+        "unpaged": false
+    },
+    "totalPages": 1,
+    "totalElements": 2,
+    "last": true,
+    "size": 5,
+    "number": 0,
+    "sort": {
+        "sorted": true,
+        "empty": false,
+        "unsorted": false
+    },
+    "numberOfElements": 2,
+    "first": true,
+    "empty": false
+}
+```
 
 ## Project structure
 ```
