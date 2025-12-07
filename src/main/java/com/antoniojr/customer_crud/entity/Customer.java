@@ -18,9 +18,9 @@ import jakarta.persistence.Table;
 public class Customer implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  private static Integer count = 0;
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private static Integer count = 0;
   private Integer id;
   private String name;
   private String cpf;

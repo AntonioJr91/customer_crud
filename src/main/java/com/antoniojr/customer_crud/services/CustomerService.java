@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +23,12 @@ public class CustomerService {
   private CustomerRepository repository;
 
   @Transactional(readOnly = true)
-  public Page<CustomerDTO> findAllPaged(PageRequest pageRequest) {
-    if (pageRequest == null) {
+  public Page<CustomerDTO> findAllPaged(Pageable pageable) {
+    if (pageable == null) {
       throw new IllegalArgumentException("pageRequest must not be null");
     }
 
-    Page<Customer> list = repository.findAll(pageRequest);
+    Page<Customer> list = repository.findAll(pageable);
     return list.map(customer -> new CustomerDTO(customer));
   }
 
@@ -54,7 +54,7 @@ public class CustomerService {
   public CustomerDTO update(int id, CustomerDTO entityDTO) {
     try {
       Customer customer = repository.getReferenceById(id);
-      
+
       copyToDto(customer, entityDTO);
 
       customer = repository.save(customer);
