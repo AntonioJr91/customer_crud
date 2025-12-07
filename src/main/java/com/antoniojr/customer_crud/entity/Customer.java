@@ -20,6 +20,7 @@ public class Customer implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private static Integer count = 0;
   private Integer id;
   private String name;
   private String cpf;
@@ -29,14 +30,16 @@ public class Customer implements Serializable {
 
   @Column(columnDefinition = "DATETIME")
   private Instant createdAt;
-  
+
   @Column(columnDefinition = "DATETIME")
   private Instant updatedAt;
 
   public Customer() {
   }
 
-  public Customer(String name, String cpf, Double income, LocalDate birthDate, Integer children) {
+  public Customer(Integer id, String name, String cpf, Double income, LocalDate birthDate, Integer children) {
+    validation(name, cpf, income, birthDate, children);
+    this.id = ++count;
     this.name = name;
     this.cpf = cpf;
     this.income = income;
@@ -97,12 +100,12 @@ public class Customer implements Serializable {
   }
 
   @PrePersist
-  public void prePersist(){
+  public void prePersist() {
     createdAt = Instant.now();
   }
-  
+
   @PreUpdate
-  public void preUpdate(){
+  public void preUpdate() {
     updatedAt = Instant.now();
   }
 
@@ -136,4 +139,28 @@ public class Customer implements Serializable {
     return "Customer [id=" + id + ", name=" + name + ", cpf=" + cpf + ", income=" + income + ", birthDate=" + birthDate
         + ", children=" + children + "]";
   }
+
+  private void validation(String name, String cpf, Double income, LocalDate birthDate, Integer children) {
+
+    if (name == null || name.trim().isEmpty()) {
+      throw new IllegalArgumentException("Name must not be null or empty");
+    }
+
+    if (cpf == null || cpf.trim().isEmpty() || cpf.length() != 11 || !cpf.matches("\\d+")) {
+      throw new IllegalArgumentException("CPF must be a numeric string of 11 digits");
+    }
+
+    if (income == null || income <= 0.0) {
+      throw new IllegalArgumentException("Income must be greater than zero");
+    }
+
+    if (birthDate == null || birthDate.isAfter(LocalDate.now())) {
+      throw new IllegalArgumentException("Birth date must not be in the future");
+    }
+
+    if (children != null && children < 0) {
+      throw new IllegalArgumentException("Children must be zero or positive");
+    }
+  }
+
 }
