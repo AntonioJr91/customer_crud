@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +42,7 @@ public class CustomerController {
   }
 
   @PostMapping
+  @PreAuthorize("hasAuthority('SCOPE_NORMAL') or hasAuthority('SCOPE_ADMIN')")
   public ResponseEntity<CustomerDTO> insert(@RequestBody CustomerDTO entityDTO) {
     entityDTO = customerService.insert(entityDTO);
     URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(entityDTO.getId()).toUri();
@@ -48,12 +50,14 @@ public class CustomerController {
   }
 
   @PutMapping(value = "/{id}")
+  @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
   public ResponseEntity<CustomerDTO> update(@PathVariable int id, @RequestBody CustomerDTO entityDTO) {
     entityDTO = customerService.update(id, entityDTO);
     return ResponseEntity.ok(entityDTO);
   }
 
   @DeleteMapping(value = "/{id}")
+  @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
   public ResponseEntity<CustomerDTO> delete(@PathVariable int id) {
     customerService.delete(id);
     return ResponseEntity.noContent().build();

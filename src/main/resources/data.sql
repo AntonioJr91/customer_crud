@@ -1,3 +1,13 @@
+INSERT INTO tbl_roles (name) VALUES ('ADMIN');
+INSERT INTO tbl_roles (name) VALUES ('NORMAL');
+
+INSERT INTO tbl_users (username, password) VALUES ('admin@admin.com', '$2y$10$JLcKQWYJUAF54iIEuR.p6.XKVxuorNeGjtVUIrt7G/nYtjNOqjyDS');
+INSERT INTO tbl_users (username, password) VALUES ('normal@normal.com', '$2y$10$JLcKQWYJUAF54iIEuR.p6.XKVxuorNeGjtVUIrt7G/nYtjNOqjyDS');
+
+INSERT INTO tbl_user_roles (user_id, role_id) VALUES (1,1);
+INSERT INTO tbl_user_roles (user_id, role_id) VALUES (2,2);
+
+
 INSERT INTO tbl_customer (name, cpf, income, birth_date, children, created_at)
 VALUES ('Ana Silva', '12345678901', 3500.00, '1990-05-10', 1, NOW());
 
