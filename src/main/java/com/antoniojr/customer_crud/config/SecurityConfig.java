@@ -5,6 +5,7 @@ import java.security.interfaces.RSAPublicKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
@@ -23,9 +24,13 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.antoniojr.customer_crud.entity.Role;
+import com.antoniojr.customer_crud.entity.User;
 import com.antoniojr.customer_crud.jwt.JwtAccessDeniedHandler;
 import com.antoniojr.customer_crud.jwt.JwtAuthenticationEntryPoint;
 import com.antoniojr.customer_crud.jwt.JwtBlacklistFilter;
+import com.antoniojr.customer_crud.repositories.RoleRepository;
+import com.antoniojr.customer_crud.repositories.UserRepository;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -105,4 +110,31 @@ public class SecurityConfig {
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
+
+  @Bean
+  CommandLineRunner initialSeed(UserRepository userRepo, RoleRepository roleRepo) {
+    return args -> {
+
+      if (roleRepo.count() > 0) {
+        return;
+      }
+
+      Role roleUser = new Role(null, "NORMAL");
+      Role roleAdmin = new Role(null, "ADMIN");
+      roleRepo.save(roleUser);
+      roleRepo.save(roleAdmin);
+
+      if (userRepo.findByUsername("admin@admin.com").isEmpty()) {
+        User admin = new User();
+        admin.setUsername("admin@admin.com");
+        admin.setPassword("$2y$10$JLcKQWYJUAF54iIEuR.p6.XKVxuorNeGjtVUIrt7G/nYtjNOqjyDS"); // 123456
+        admin.getRoles().add(roleAdmin);
+
+        userRepo.save(admin);
+      }
+
+      System.out.println(">>> Initial seed successfully.");
+    };
+  }
+
 }
