@@ -3,6 +3,7 @@ package com.antoniojr.customer_crud.controller;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,12 +13,14 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.antoniojr.customer_crud.dto.LoginResponseDTO;
 import com.antoniojr.customer_crud.dto.UserRegisterDTO;
 import com.antoniojr.customer_crud.entity.LoginRequest;
 import com.antoniojr.customer_crud.entity.Role;
+import com.antoniojr.customer_crud.jwt.TokenBlackList;
 import com.antoniojr.customer_crud.repositories.RoleRepository;
 import com.antoniojr.customer_crud.services.UserService;
 
@@ -27,6 +30,9 @@ public class AuthController {
   private JwtEncoder jwtEncoder;
   private UserService userService;
   private PasswordEncoder passwordEncoder;
+
+  @Autowired
+  private TokenBlackList blacklist;
 
   public AuthController(JwtEncoder jwtEncoder, UserService userService, RoleRepository roleRepository,
       PasswordEncoder passwordEncoder) {
@@ -66,5 +72,14 @@ public class AuthController {
 
     return ResponseEntity.ok(new LoginResponseDTO(jwtValue.getTokenValue(), expiresIn));
 
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+      String token = authHeader.substring(7);
+      blacklist.revoke(token);
+    }
+    return ResponseEntity.ok().build();
   }
 }

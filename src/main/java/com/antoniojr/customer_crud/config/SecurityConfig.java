@@ -23,6 +23,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.antoniojr.customer_crud.jwt.JwtAccessDeniedHandler;
+import com.antoniojr.customer_crud.jwt.JwtAuthenticationEntryPoint;
+import com.antoniojr.customer_crud.jwt.JwtBlacklistFilter;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -44,6 +47,9 @@ public class SecurityConfig {
   private JwtAuthenticationEntryPoint authEntryPoint;
 
   @Autowired
+  private JwtBlacklistFilter blacklistFilter;
+
+  @Autowired
   private JwtAccessDeniedHandler accessDeniedHandler;
 
   @Bean
@@ -51,6 +57,7 @@ public class SecurityConfig {
     http.authorizeHttpRequests(auth -> auth
         .requestMatchers("/h2-console/**").permitAll()
         .requestMatchers("/login", "/register").permitAll()
+        .requestMatchers(HttpMethod.POST, "/logout").authenticated()
         .requestMatchers(HttpMethod.GET, "/customers/**").permitAll()
         .anyRequest().authenticated())
         .csrf(csrf -> csrf.disable())
@@ -63,6 +70,10 @@ public class SecurityConfig {
             .authenticationEntryPoint(authEntryPoint)
             .accessDeniedHandler(accessDeniedHandler)
             .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+
+    http.addFilterBefore(blacklistFilter,
+        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+    http.logout(logout -> logout.disable());
     return http.build();
   }
 

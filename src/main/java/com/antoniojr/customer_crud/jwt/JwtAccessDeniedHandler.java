@@ -1,4 +1,4 @@
-package com.antoniojr.customer_crud.config;
+package com.antoniojr.customer_crud.jwt;
 
 import java.io.IOException;
 import java.time.Instant;
