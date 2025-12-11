@@ -3,13 +3,14 @@ Simple CRUD application for customer management using Spring Boot, MySQL, and Do
 This project was created for learning purposes and to practice backend development with database integration and containerization.
 
 ## Overview
-The application exposes REST endpoints for creating, reading, updating, and deleting customer records.
-It follows a layered architecture using JPA to manage data persistence.
+The application provides REST endpoints for customer and user management, built on a layered architecture using services and repositories.
+Data persistence is powered by JPA/Hibernate, and security is enforced through JWT-based authentication and role-based access control.
 
 ## Technologies
 * Java 17+
 * Spring Boot
 * Spring Data JPA
+* Spring Security + OAuth2 Resource Server (JWT)
 * MySQL
 * Docker & Docker Compose
 * Maven
@@ -33,24 +34,55 @@ It follows a layered architecture using JPA to manage data persistence.
 ```CustomerCrudApplication.java```
 
 ## Endpoints
-Method | Endpoint        | Description                 
---|--|--
-GET | /customers | Get all customers           
-GET | /customers/{id} | Get customer by ID          
-POST | /customers | Create a new customer       
-PUT | /customers/{id} | Update an existing customer 
-DELETE | /customers/{id} | Delete a customer
+
+### Auth Endpoints
+| Method | Endpoint    | Description                              | Authorization                                                                      |
+| ------ | ----------- | ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| POST   | `/register` | Register a new user                      | None                                                                               |
+| POST   | `/login`    | Authenticate user and return JWT token   | None                                                                               |
+| POST   | `/logout`   | Invalidate current JWT token (blacklist) | Requires header `Authorization: Bearer <token>` (no `@PreAuthorize` on controller) |
+
+* Auth — Example Requests
+```json
+{
+    "username": "teste@teste.com",
+    "password": "123456"
+}
+```
+
+### Users Endpoints
+| Method | Endpoint      | Description               | Authorization                       |
+| ------ | ------------- | ------------------------- | ----------------------------------- |
+| GET    | `/users`      | Get all users (paginated) | `SCOPE_NORMAL` **or** `SCOPE_ADMIN` |
+| GET    | `/users/{id}` | Get user by ID            | `SCOPE_NORMAL` **or** `SCOPE_ADMIN` |
+| POST   | `/users`      | Create a new user         | `SCOPE_ADMIN`                       |
+| PUT    | `/users/{id}` | Update user               | `SCOPE_ADMIN`                       |
+| DELETE | `/users/{id}` | Delete user               | `SCOPE_ADMIN`                       |
+
+
+### Customers Endpoints
+| Method | Endpoint          | Description                                                    | Authorization                                                 |
+| ------ | ----------------- | -------------------------------------------------------------- | ------------------------------------------------------------- |
+| GET    | `/customers`      | Get all customers (paginated, supports `page`, `size`, `sort`) | None (public in controller)                                   |
+| GET    | `/customers/{id}` | Get customer by ID                                             | None (public in controller)                                   |
+| POST   | `/customers`      | Create a new customer                                          | `SCOPE_NORMAL` **or** `SCOPE_ADMIN`                           |
+| PUT    | `/customers/{id}` | Update an existing customer                                    | `SCOPE_ADMIN`                                                 |
+| DELETE | `/customers/{id}` | Delete a customer                                              | `SCOPE_ADMIN`                                                 |
+
+* Customers — Example Payload
+```json
+{
+    "name": "Maria Silva",
+    "cpf": "12345678910",
+    "income": 1.0,
+    "birthDate": "1995-05-10",
+    "children": 0
+}
+
+```
 
 ## Pagination
-The customer listing supports pagination and sorting through query parameters.  
-
-**Query parameters:**
-| Parameter | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| page | Integer | No | 1 | Page number (starting from 1) |
-| sizePage | Integer | No | 5 | Number of records per page |
-| orderBy | String | No | name | Field used for sorting |
-| direction | String | No | ASC | Sorting direction: ASC or DESC |
+The customer listing supports pagination and sorting through query parameters. 
 
 **Example request:**  
 ```GET /customers?page=1&sizePage=5&orderBy=name&direction=ASC```  
@@ -59,59 +91,33 @@ The customer listing supports pagination and sorting through query parameters.
 ```json
 {
   "content": [
-        {
-            "id": 1,
-            "name": "John",
-            "cpf": "12345678910",
-            "income": 2500.0,
-            "birthDate": "1990-05-10",
-            "children": 2
-        },
-        {
-            "id": 2,
-            "name": "Mary",
-            "cpf": "0987654321",
-            "income": 3500.0,
-            "birthDate": "1995-05-10",
-            "children": 0
-        }
-    ],
-    "pageable": {
-        "pageNumber": 0,
-        "pageSize": 5,
-        "sort": {
-            "sorted": true,
-            "empty": false,
-            "unsorted": false
-        },
-        "offset": 0,
-        "paged": true,
-        "unpaged": false
-    },
-    "totalPages": 1,
-    "totalElements": 2,
-    "last": true,
-    "size": 5,
-    "number": 0,
-    "sort": {
-        "sorted": true,
-        "empty": false,
-        "unsorted": false
-    },
-    "numberOfElements": 2,
-    "first": true,
-    "empty": false
+    {
+      "id": 1,
+      "name": "John",
+      "cpf": "12345678910",
+      "income": 2500.0,
+      "birthDate": "1990-05-10",
+      "children": 2
+    }
+  ],
+  "pageable": { ... },
+  "totalPages": 1,
+  "totalElements": 2
 }
 ```
 
 ## Project structure
 ```
 src/main/java/com/antoniojr/customer_crud/
-  ├─ controller/       → REST endpoints
-  ├─ dto/              → Data transfer objects
-  ├─ entity/           → JPA entities
-  ├─ repositories/     → Spring Data JPA repositories
-  └─ services/         → Business logic
+  ├─ config/            
+  ├─ controller/        
+  ├─ dto/               
+  ├─ entity/            
+  ├─ exceptions/        
+  ├─ jwt/               
+  ├─ repositories/      
+  ├─ services/          
+  └─ CustomerCrudApplication.java 
 
 src/main/resources/
   ├─ application.properties
