@@ -6,14 +6,18 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.antoniojr.customer_crud.dto.UserDTO;
 import com.antoniojr.customer_crud.dto.UserRegisterDTO;
 import com.antoniojr.customer_crud.dto.UserUpdateDTO;
+import com.antoniojr.customer_crud.entity.Role;
 import com.antoniojr.customer_crud.entity.User;
+import com.antoniojr.customer_crud.repositories.RoleRepository;
 import com.antoniojr.customer_crud.repositories.UserRepository;
 import com.antoniojr.customer_crud.services.exceptions.ResourceNotFoundException;
 
@@ -23,10 +27,12 @@ import jakarta.persistence.EntityNotFoundException;
 public class UserService {
 
   private UserRepository repository;
+  private RoleRepository roleRepository;
   private PasswordEncoder passwordEncoder;
 
-  public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
+  public UserService(UserRepository repository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
     this.repository = repository;
+    this.roleRepository = roleRepository;
     this.passwordEncoder = passwordEncoder;
   }
 
@@ -48,15 +54,25 @@ public class UserService {
     return new UserDTO(entity);
   }
 
+  @Transactional(readOnly = true)
+  public User findByUsername(String username) {
+    return repository.findByUsername(username).orElse(null);
+  }
+
   @Transactional
   public UserDTO insert(UserRegisterDTO entityDTO) {
     Optional<User> userExists = repository.findByUsername(entityDTO.getUsername());
 
     if (userExists.isPresent()) {
-      throw new DataIntegrityViolationException("Username already exists");
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
     }
 
     User user = new User();
+
+    Role defaultRole = roleRepository.findByName("NORMAL")
+        .orElseThrow(() -> new RuntimeException("Default role not found."));
+
+    user.getRoles().add(defaultRole);
 
     copyToDto(user, entityDTO);
 
@@ -89,6 +105,7 @@ public class UserService {
     }
   }
 
+  @Transactional
   public void delete(int id) {
     try {
       repository.deleteById(id);

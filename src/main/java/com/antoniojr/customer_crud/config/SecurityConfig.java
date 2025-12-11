@@ -3,12 +3,12 @@ package com.antoniojr.customer_crud.config;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,6 +19,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.nimbusds.jose.jwk.JWK;
@@ -38,18 +40,42 @@ public class SecurityConfig {
   @Value("${jwt.public.key}")
   private RSAPublicKey publicKey;
 
+  @Autowired
+  private JwtAuthenticationEntryPoint authEntryPoint;
+
+  @Autowired
+  private JwtAccessDeniedHandler accessDeniedHandler;
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**").permitAll()
-        .requestMatchers("/login").permitAll()
-        .requestMatchers("/register").permitAll()
+    http.authorizeHttpRequests(auth -> auth
+        .requestMatchers("/h2-console/**").permitAll()
+        .requestMatchers("/login", "/register").permitAll()
         .requestMatchers(HttpMethod.GET, "/customers/**").permitAll()
         .anyRequest().authenticated())
         .csrf(csrf -> csrf.disable())
         .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .exceptionHandling(ex -> ex
+            .authenticationEntryPoint(authEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler))
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .authenticationEntryPoint(authEntryPoint)
+            .accessDeniedHandler(accessDeniedHandler)
+            .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
     return http.build();
+  }
+
+  @Bean
+  public JwtAuthenticationConverter jwtAuthenticationConverter() {
+    JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
+    scopeConverter.setAuthorityPrefix("SCOPE_");
+    scopeConverter.setAuthoritiesClaimName("scope");
+
+    JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+    jwtConverter.setJwtGrantedAuthoritiesConverter(scopeConverter);
+
+    return jwtConverter;
   }
 
   @Bean

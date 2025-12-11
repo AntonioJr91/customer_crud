@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.antoniojr.customer_crud.services.exceptions.ResourceNotFoundException;
 
@@ -24,5 +25,16 @@ public class ResourceExceptionHandler {
     error.setPath(request.getRequestURI());
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+  }
+
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<StandardError> handleResponseStatus(ResponseStatusException e, HttpServletRequest request) {
+    StandardError error = new StandardError();
+    error.setTimestamp(Instant.now());
+    error.setStatus(HttpStatus.CONFLICT.value());
+    error.setError("Conflict");
+    error.setMsg(e.getReason());
+    error.setPath(request.getRequestURI());
+    return ResponseEntity.status(e.getStatusCode()).body(error);
   }
 }

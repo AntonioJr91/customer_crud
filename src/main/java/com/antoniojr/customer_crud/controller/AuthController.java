@@ -18,62 +18,45 @@ import com.antoniojr.customer_crud.dto.LoginResponseDTO;
 import com.antoniojr.customer_crud.dto.UserRegisterDTO;
 import com.antoniojr.customer_crud.entity.LoginRequest;
 import com.antoniojr.customer_crud.entity.Role;
-import com.antoniojr.customer_crud.entity.User;
 import com.antoniojr.customer_crud.repositories.RoleRepository;
-import com.antoniojr.customer_crud.repositories.UserRepository;
+import com.antoniojr.customer_crud.services.UserService;
 
 @RestController
 public class AuthController {
 
   private JwtEncoder jwtEncoder;
-  private UserRepository userRepository;
-  private RoleRepository roleRepository;
+  private UserService userService;
   private PasswordEncoder passwordEncoder;
 
-  public AuthController(JwtEncoder jwtEncoder, UserRepository userRepository, RoleRepository roleRepository,
+  public AuthController(JwtEncoder jwtEncoder, UserService userService, RoleRepository roleRepository,
       PasswordEncoder passwordEncoder) {
     this.jwtEncoder = jwtEncoder;
-    this.userRepository = userRepository;
-    this.roleRepository = roleRepository;
+    this.userService = userService;
     this.passwordEncoder = passwordEncoder;
   }
 
   @PostMapping("/register")
   public ResponseEntity<Void> register(@RequestBody UserRegisterDTO newUser) {
-    var userOpt = userRepository.findByUsername(newUser.getUsername());
-    if (userOpt.isPresent()) {
-      throw new BadCredentialsException("This username already exists.");
-    }
-
-    User user = new User();
-    user.setUsername(newUser.getUsername());
-    user.setPassword(passwordEncoder.encode(newUser.getPassword()));
-
-    Role defaultRole = roleRepository.findByName("NORMAL")
-        .orElseThrow(() -> new RuntimeException("Default role not found."));
-
-    user.getRoles().add(defaultRole);
-
-    userRepository.save(user);
-
+    userService.insert(newUser);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 
   @PostMapping("/login")
   public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequest loginRequest) {
-    var user = userRepository.findByUsername(loginRequest.getUsername());
-    if (user.isEmpty() || !passwordEncoder.matches(loginRequest.getPassword(), user.get().getPassword())) {
+    var user = userService.findByUsername(loginRequest.getUsername());
+
+    if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
       throw new BadCredentialsException("User or password is invalid.");
     }
 
     Long expiresIn = 300L;
     Instant now = Instant.now();
 
-    var roles = user.get().getRoles().stream().map(Role::getName).collect(Collectors.joining(" "));
+    var roles = user.getRoles().stream().map(Role::getName).collect(Collectors.joining(" "));
 
     var claims = JwtClaimsSet.builder()
         .issuer("api")
-        .subject(user.get().getId().toString())
+        .subject(user.getId().toString())
         .issuedAt(now)
         .expiresAt(now.plusSeconds(expiresIn))
         .claim("scope", roles)
