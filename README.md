@@ -42,10 +42,10 @@ Data persistence is powered by JPA/Hibernate, and security is enforced through J
 | POST   | `/login`    | Authenticate user and return JWT token   | None                                                                               |
 | POST   | `/logout`   | Invalidate current JWT token (blacklist) | Requires header `Authorization: Bearer <token>` (no `@PreAuthorize` on controller) |
 
-* Auth — Example Requests
+* Auth — Example already available for testing:
 ```json
 {
-    "username": "teste@teste.com",
+    "username": "admin@admin.com",
     "password": "123456"
 }
 ```
@@ -78,7 +78,6 @@ Data persistence is powered by JPA/Hibernate, and security is enforced through J
     "birthDate": "1995-05-10",
     "children": 0
 }
-
 ```
 
 ## Pagination
